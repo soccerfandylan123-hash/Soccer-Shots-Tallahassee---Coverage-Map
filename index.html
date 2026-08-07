@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f2b46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Soccer Shots Tallahassee — Coverage Map</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+
+<style>
+/* ============================================================
+   CONFIG NOTE: your Apps Script URL goes in the JS below,
+   look for  const API_URL = ''
+   ============================================================ */
+
+:root{
+  --navy:#0f2b46;
+  --navy-2:#17395c;
+  --green:#3fae49;
+  --green-d:#2f8a37;
+  --blue:#2563eb;
+  --amber:#f59e0b;
+  --red:#dc2626;
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --line:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
+  --shadow:0 4px 20px rgba(15,43,70,.16);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:16px} /* 16px stops iOS zoom-on-focus */
+
+/* ---------- layout ---------- */
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+
+#map{position:absolute;inset:0;z-index:1;background:#dfe6ec}
+
+/* ---------- top bar ---------- */
+#topbar{
+  position:absolute;top:0;left:0;right:0;z-index:600;
+  padding:calc(var(--safe-t) + 8px) 10px 8px;
+  background:linear-gradient(180deg,rgba(15,43,70,.97) 0%,rgba(15,43,70,.92) 70%,rgba(15,43,70,0) 100%);
+  pointer-events:none;
+}
+#topbar > *{pointer-events:auto}
+.brandrow{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.ball{
+  width:30px;height:30px;flex:0 0 30px;border-radius:50%;
+  background:var(--green);display:grid;place-items:center;font-size:17px;line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.brandtext{min-width:0}
+.brandtext h1{margin:0;font-size:14.5px;font-weight:800;color:#fff;letter-spacing:.2px;line-height:1.15}
+.brandtext p{margin:1px 0 0;font-size:10.5px;color:#9db8d1;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* stat chips */
+#stats{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#stats::-webkit-scrollbar{display:none}
+.stat{
+  flex:0 0 auto;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);
+  border-radius:9px;padding:5px 9px;color:#fff;backdrop-filter:blur(6px);
+}
+.stat b{display:block;font-size:15px;font-weight:800;line-height:1.1}
+.stat span{font-size:9.5px;color:#a8c3da;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+/* ---------- right side control stack ---------- */
+#sidectl{
+  position:absolute;z-index:600;right:10px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:8px;
+}
+.ctl{
+  width:44px;height:44px;border-radius:12px;background:var(--card);
+  box-shadow:var(--shadow);display:grid;place-items:center;font-size:19px;
+  border:1px solid var(--line);transition:transform .12s,background .12s;
+}
+.ctl:active{transform:scale(.92)}
+.ctl.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ctl small{position:absolute;margin-top:30px;font-size:8px;font-weight:700;letter-spacing:.3px}
+
+/* ---------- bottom action bar ---------- */
+#bottombar{
+  position:absolute;left:0;right:0;bottom:0;z-index:600;
+  padding:10px 10px calc(var(--safe-b) + 10px);
+  display:flex;gap:8px;align-items:center;
+  background:linear-gradient(0deg,rgba(244,246,248,.95) 40%,rgba(244,246,248,0) 100%);
+}
+#logBtn{
+  flex:1;height:52px;border-radius:14px;background:var(--green);color:#fff;
+  font-size:16px;font-weight:800;letter-spacing:.2px;
+  box-shadow:0 6px 20px rgba(63,174,73,.42);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s;
+}
+#logBtn:active{transform:scale(.97);background:var(--green-d)}
+#listBtn{
+  width:52px;height:52px;border-radius:14px;background:var(--card);
+  box-shadow:var(--shadow);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:20px;position:relative;
+}
+#listBtn .count{
+  position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;
+  border-radius:10px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;
+  display:grid;place-items:center;border:2px solid var(--bg);
+}
+
+/* ---------- sheet (add form / list) ---------- */
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:900;
+  background:var(--card);border-radius:20px 20px 0 0;
+  box-shadow:0 -8px 40px rgba(15,43,70,.28);
+  transform:translateY(110%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:88vh;display:flex;flex-direction:column;
+  padding-bottom:var(--safe-b);
+}
+.sheet.open{transform:translateY(0)}
+.grabber{width:38px;height:4px;border-radius:2px;background:#cbd5e1;margin:9px auto 4px;flex:0 0 auto}
+.sheet-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 16px 10px;border-bottom:1px solid var(--line);flex:0 0 auto;
+}
+.sheet-head h2{margin:0;font-size:16.5px;font-weight:800}
+.xbtn{width:32px;height:32px;border-radius:9px;background:var(--bg);display:grid;place-items:center;font-size:16px;color:var(--muted)}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 16px}
+
+#scrim{
+  position:absolute;inset:0;z-index:850;background:rgba(15,43,70,.42);
+  opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(1px);
+}
+#scrim.on{opacity:1;pointer-events:auto}
+
+/* ---------- form bits ---------- */
+.label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
+.field{margin-bottom:15px}
+.inp{
+  width:100%;height:46px;padding:0 13px;border:1.5px solid var(--line);border-radius:11px;
+  background:#fff;color:var(--text);outline:none;transition:border-color .15s;
+}
+.inp:focus{border-color:var(--green)}
+textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-height:1.4}
+
+/* segmented control */
+.seg{display:flex;gap:6px}
+.seg button{
+  flex:1;height:44px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
+  font-size:13px;font-weight:700;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  transition:all .14s;
+}
+.seg button small{font-size:9.5px;font-weight:600;opacity:.8}
+.seg button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.seg.type button.on[data-v="sign"]{background:var(--green);border-color:var(--green)}
+.seg.type button.on[data-v="flyer"]{background:var(--blue);border-color:var(--blue)}
+.seg.type button.on[data-v="both"]{background:var(--amber);border-color:var(--amber)}
+
+/* location picker */
+.locbox{border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+.loctabs{display:flex;background:var(--bg);border-bottom:1.5px solid var(--line)}
+.loctabs button{
+  flex:1;padding:11px 4px;font-size:11.5px;font-weight:700;color:var(--muted);
+  border-bottom:2.5px solid transparent;transition:all .14s;
+}
+.loctabs button.on{color:var(--navy);border-bottom-color:var(--green);background:#fff}
+.locpane{padding:12px;display:none}
+.locpane.on{display:block}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+
+.btn{
+  width:100%;height:46px;border-radius:11px;font-size:14.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .12s;
+}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--green);color:#fff}
+.btn.dark{background:var(--navy);color:#fff}
+.btn.ghost{background:var(--bg);color:var(--navy);border:1.5px solid var(--line)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+
+.pinned{
+  margin-top:11px;padding:10px 12px;border-radius:10px;background:#ecfdf3;
+  border:1.5px solid #a7e3b8;font-size:12.5px;color:#166534;font-weight:600;line-height:1.45;
+  display:none;
+}
+.pinned.on{display:block}
+.pinned .coords{font-weight:400;opacity:.75;font-size:11px;display:block;margin-top:2px}
+
+#searchResults{margin-top:9px;display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto}
+#searchResults button{
+  text-align:left;padding:9px 11px;border-radius:9px;background:var(--bg);
+  font-size:12.5px;line-height:1.35;border:1px solid var(--line);
+}
+#searchResults button:active{background:#e6ecf2}
+#searchResults button b{display:block;font-size:13px;margin-bottom:1px}
+#searchResults button span{color:var(--muted);font-size:11px}
+
+.qtyrow{display:flex;gap:8px;align-items:center}
+.qtyrow .inp{text-align:center;font-weight:800;font-size:17px}
+.qbtn{width:46px;height:46px;flex:0 0 46px;border-radius:11px;background:var(--bg);border:1.5px solid var(--line);font-size:21px;font-weight:700;color:var(--navy);display:grid;place-items:center}
+.qbtn:active{background:#e2e8f0}
+
+/* ---------- list ---------- */
+.filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.filters::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;padding:7px 12px;border-radius:20px;background:var(--bg);
+  border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);
+}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.entry{
+  display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);align-items:flex-start;
+}
+.entry:last-child{border-bottom:0}
+.edot{width:11px;height:11px;border-radius:50%;flex:0 0 11px;margin-top:4px}
+.einfo{flex:1;min-width:0}
+.einfo b{display:block;font-size:13.5px;font-weight:700;line-height:1.3;word-break:break-word}
+.einfo .meta{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.einfo .note{font-size:11.5px;color:#475569;margin-top:3px;font-style:italic;line-height:1.4;word-break:break-word}
+.eacts{display:flex;gap:4px;flex:0 0 auto}
+.eacts button{width:32px;height:32px;border-radius:8px;background:var(--bg);display:grid;place-items:center;font-size:13px}
+.eacts button.del{color:var(--red)}
+
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty div{font-size:38px;margin-bottom:10px;opacity:.55}
+.empty p{margin:0;font-size:13.5px;line-height:1.6}
+
+/* ---------- toast + banner ---------- */
+#toast{
+  position:absolute;left:50%;bottom:88px;transform:translate(-50%,20px);z-index:1200;
+  background:var(--navy);color:#fff;padding:11px 17px;border-radius:11px;
+  font-size:13px;font-weight:650;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:all .26s;max-width:88vw;text-align:center;line-height:1.4;
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.err{background:var(--red)}
+#toast.warn{background:var(--amber);color:#3d2900}
+
+#banner{
+  position:absolute;left:8px;right:8px;z-index:620;
+  top:calc(var(--safe-t) + 96px);
+  background:#fffbeb;border:1.5px solid #fcd34d;border-radius:11px;
+  padding:10px 12px;font-size:12px;color:#78350f;line-height:1.5;
+  box-shadow:0 3px 14px rgba(0,0,0,.1);display:none;
+}
+#banner.on{display:block}
+#banner b{display:block;margin-bottom:2px;font-size:12.5px}
+#banner code{background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-size:11px}
+
+/* crosshair for tap-to-place mode */
+#crosshair{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);z-index:640;
+  font-size:36px;pointer-events:none;display:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35));
+}
+#crosshair.on{display:block}
+#tapmode{
+  position:absolute;left:50%;transform:translateX(-50%);z-index:640;
+  bottom:calc(var(--safe-b) + 76px);background:var(--navy);color:#fff;
+  padding:10px 16px;border-radius:11px;font-size:13px;font-weight:700;
+  box-shadow:var(--shadow);display:none;align-items:center;gap:10px;white-space:nowrap;
+}
+#tapmode.on{display:flex}
+#tapmode button{background:var(--green);padding:7px 13px;border-radius:8px;font-weight:800;font-size:12.5px}
+
+/* leaflet tweaks */
+.leaflet-control-attribution{font-size:9px;opacity:.65}
+.leaflet-popup-content-wrapper{border-radius:11px}
+.leaflet-popup-content{margin:11px 13px;font-size:13px;line-height:1.5}
+.leaflet-popup-content b{font-size:14px}
+.leaflet-control-zoom{display:none}
+
+/* desktop */
+@media (min-width:820px){
+  #topbar{max-width:400px;background:none;padding:14px}
+  .brandrow{background:var(--navy);padding:11px 13px;border-radius:13px;box-shadow:var(--shadow);margin-bottom:9px}
+  #stats{flex-wrap:wrap;overflow:visible}
+  .stat{background:var(--card);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow)}
+  .stat span{color:var(--muted)}
+  .sheet{left:auto;right:14px;bottom:14px;width:400px;border-radius:18px;max-height:calc(100vh - 210px);
+    transform:translateY(calc(100% + 30px))}
+  .sheet.open{transform:translateY(0)}
+  #bottombar{left:auto;right:14px;bottom:14px;width:400px;background:none;padding:0}
+  #banner{left:14px;right:auto;width:400px;top:auto;bottom:14px}
+  .leaflet-control-zoom{display:block}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="map"></div>
+
+  <div id="crosshair">📍</div>
+
+  <div id="tapmode">
+    <span>Move the map to the spot</span>
+    <button id="tapConfirm">Drop here</button>
+  </div>
+
+  <header id="topbar">
+    <div class="brandrow">
+      <div class="ball">⚽</div>
+      <div class="brandtext">
+        <h1>Soccer Shots Tallahassee</h1>
+        <p>Outreach Coverage Map</p>
+      </div>
+    </div>
+    <div id="stats"></div>
+  </header>
+
+  <div id="banner"></div>
+
+  <div id="sidectl">
+    <button class="ctl on" id="tHeat" title="Heat map">🔥</button>
+    <button class="ctl on" id="tCover" title="Coverage radius">⭕</button>
+    <button class="ctl on" id="tPins" title="Pins">📍</button>
+    <button class="ctl" id="tLocate" title="Find me">🎯</button>
+    <button class="ctl" id="tSync" title="Refresh">🔄</button>
+  </div>
+
+  <div id="bottombar">
+    <button id="logBtn">＋ Log a drop</button>
+    <button id="listBtn">📋<span class="count" id="cnt">0</span></button>
+  </div>
+
+  <div id="scrim"></div>
+
+  <!-- ADD SHEET -->
+  <section class="sheet" id="addSheet">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <h2>Log a drop</h2>
+      <button class="xbtn" data-close>✕</button>
+    </div>
+    <div class="sheet-body">
+
+      <div class="field">
+        <p class="label">What did you drop?</p>
+        <div class="seg type" id="segType">
+          <button data-v="sign" class="on">🪧 Yard sign<small>signs</small></button>
+          <button data-v="flyer">📄 Flyers<small>handouts</small></button>
+          <button data-v="both">🪧📄 Both<small>combo</small></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="label">How many</p>
+        <div class="qtyrow">
+          <button class="qbtn" id="qMinus">−</button>
+          <input class="inp" id="fQty" type="number" inputmode="numeric" value="1" min="1">
+          <button class="qbtn" id="qPlus">＋</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="label">Where</p>
+        <div class="locbox">
+          <div class="loctabs">
+            <button data-tab="gps" class="on">🎯 My GPS</button>
+            <button data-tab="tap">🗺️ Tap map</button>
+            <button data-tab="find">🔍 Search</button>
+          </div>
+
+          <div class="locpane on" data-pane="gps">
+            <button class="btn dark" id="gpsBtn">🎯 Use my current location</button>
+            <p class="hint" style="margin-top:9px">Fastest option — tap this right as you finish putting the sign in.</p>
+          </div>
+
+          <div class="locpane" data-pane="tap">
+            <button class="btn dark" id="tapBtn">🗺️ Pick a spot on the map</button>
+            <p class="hint" style="margin-top:9px">Closes this panel so you can pan the map. Good for logging a batch later.</p>
+          </div>
+
+          <div class="locpane" data-pane="find">
+            <input class="inp" id="fSearch" placeholder="e.g. Tom Brown Park, 1234 Main St" autocomplete="off">
+            <button class="btn ghost" id="searchBtn" style="margin-top:8px">🔍 Search Tallahassee</button>
+            <div id="searchResults"></div>
+          </div>
+
+          <div class="pinned" id="pinned" style="margin:0 12px 12px"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="label">Place name <span style="text-transform:none;font-weight:600">(optional)</span></p>
+        <input class="inp" id="fPlace" placeholder="Publix on Thomasville, Kate Sullivan Elem…" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <p class="label">Notes <span style="text-transform:none;font-weight:600">(optional)</span></p>
+        <textarea class="inp" id="fNotes" placeholder="Got permission from manager, busy corner, re-check in 2 weeks…"></textarea>
+      </div>
+
+      <div class="field">
+        <p class="label">Your name</p>
+        <input class="inp" id="fWho" placeholder="Who's logging this?" autocomplete="name">
+      </div>
+
+      <button class="btn primary" id="saveBtn" style="height:52px;font-size:16px">✓ Save to map</button>
+    </div>
+  </section>
+
+  <!-- LIST SHEET -->
+  <section class="sheet" id="listSheet">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <h2>All drops</h2>
+      <div style="display:flex;gap:6px">
+        <button class="xbtn" id="exportBtn" title="Download CSV">⬇</button>
+        <button class="xbtn" data-close>✕</button>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="filters" id="filters">
+        <button class="chip on" data-f="all">All</button>
+        <button class="chip" data-f="sign">🪧 Signs</button>
+        <button class="chip" data-f="flyer">📄 Flyers</button>
+        <button class="chip" data-f="mine">👤 Mine</button>
+        <button class="chip" data-f="week">📅 This week</button>
+      </div>
+      <div id="entries"></div>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+/* ============================================================================
+   ⬇⬇⬇  PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BETWEEN THE QUOTES  ⬇⬇⬇
+   (See SETUP.md — takes about 3 minutes. Until then the app still works,
+    but data only saves on this one device.)
+   ============================================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxCiZw-_bWy7Bxj3_eRg0DLaL6Jk-nPWk0nJfc6G4WHRNDIkSSojjYmKtYzPpz3O8xhcA/exec';
+/* ========================================================================== */
+
+const TLH = [30.4383, -84.2807];          // downtown Tallahassee
+const TLH_BOUNDS = [[30.29, -84.53], [30.61, -84.05]];
+const COVER_RADIUS_M = 700;                // ~0.45 mi "we blanketed this" radius
+const LS_KEY = 'ssmap_drops_v1';
+const LS_QUEUE = 'ssmap_queue_v1';
+const LS_WHO = 'ssmap_who_v1';
+
+const TYPES = {
+  sign:  {label:'Yard sign', emoji:'🪧', color:'#3fae49', defQty:1},
+  flyer: {label:'Flyers',    emoji:'📄', color:'#2563eb', defQty:25},
+  both:  {label:'Sign + flyers', emoji:'🪧📄', color:'#f59e0b', defQty:25},
+};
+
+let drops = [];
+let pending = [];
+let picked = null;               // {lat,lng,label}
+let curType = 'sign';
+let curFilter = 'all';
+let tapping = false;
+let meMarker = null;
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------------- map ---------------- */
+const map = L.map('map', {
+  center: TLH, zoom: 12, zoomControl: true,
+  maxBounds: L.latLngBounds(TLH_BOUNDS).pad(0.6),
+  tap: true,
+}).setMaxZoom(18);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19, subdomains:'abcd'
+}).addTo(map);
+
+const pinLayer   = L.layerGroup().addTo(map);
+const coverLayer = L.layerGroup().addTo(map);
+let   heatLayer  = L.heatLayer([], {
+  radius:38, blur:26, minOpacity:.28, maxZoom:15,
+  gradient:{0.15:'#2563eb',0.4:'#22c55e',0.65:'#facc15',0.85:'#f97316',1:'#dc2626'}
+}).addTo(map);
+
+/* ---------------- storage ---------------- */
+const loadLocal  = () => { try{ return JSON.parse(localStorage.getItem(LS_KEY)) || [] }catch{ return [] } };
+const saveLocal  = () => { try{ localStorage.setItem(LS_KEY, JSON.stringify(drops)) }catch{} };
+const loadQueue  = () => { try{ return JSON.parse(localStorage.getItem(LS_QUEUE)) || [] }catch{ return [] } };
+const saveQueue  = () => { try{ localStorage.setItem(LS_QUEUE, JSON.stringify(pending)) }catch{} };
+
+/* ---------------- backend ---------------- */
+async function apiGet(){
+  if(!API_URL) return null;
+  const r = await fetch(API_URL + '?action=list&t=' + Date.now());
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || 'server error');
+  return j.drops;
+}
+async function apiPost(payload){
+  if(!API_URL) throw new Error('no backend');
+  // text/plain keeps it a "simple request" so the browser skips the CORS
+  // preflight that Apps Script can't answer.
+  const r = await fetch(API_URL, {
+    method:'POST', body: JSON.stringify(payload),
+    headers:{'Content-Type':'text/plain;charset=utf-8'}
+  });
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || 'server error');
+  return j;
+}
+
+async function flushQueue(){
+  if(!API_URL || !pending.length) return;
+  const still = [];
+  for(const item of pending){
+    try{ await apiPost(item) }catch{ still.push(item) }
+  }
+  pending = still; saveQueue();
+}
+
+async function sync(quiet){
+  if(!API_URL){
+    drops = loadLocal(); render();
+    banner(`<b>⚠️ Not synced yet — this device only</b>Open <code>index.html</code>, find <code>const API_URL = ''</code> near the bottom, and paste your Google Apps Script URL between the quotes. Steps are in SETUP.md.`);
+    return;
+  }
+  try{
+    if(!quiet) toast('Syncing…');
+    await flushQueue();
+    const server = await apiGet();
+    drops = server; saveLocal(); render();
+    banner(null);
+    if(!quiet) toast(`Synced — ${drops.length} drop${drops.length===1?'':'s'} on the map`);
+  }catch(e){
+    drops = loadLocal(); render();
+    banner(`<b>📴 Offline — showing last synced data</b>Anything you log is saved on this phone and uploads automatically when you're back on signal.${pending.length?` (${pending.length} waiting)`:''}`);
+    if(!quiet) toast('Couldn\'t reach the sheet — working offline', 'warn');
+  }
+}
+
+/* ---------------- rendering ---------------- */
+function visible(){
+  const who = (localStorage.getItem(LS_WHO)||'').trim().toLowerCase();
+  const weekAgo = Date.now() - 7*864e5;
+  return drops.filter(d=>{
+    if(curFilter==='sign')  return d.type==='sign' || d.type==='both';
+    if(curFilter==='flyer') return d.type==='flyer'|| d.type==='both';
+    if(curFilter==='mine')  return who && (d.who||'').trim().toLowerCase()===who;
+    if(curFilter==='week')  return new Date(d.ts).getTime() >= weekAgo;
+    return true;
+  });
+}
+
+function render(){
+  const list = visible();
+
+  // pins
+  pinLayer.clearLayers();
+  coverLayer.clearLayers();
+  list.forEach(d=>{
+    const t = TYPES[d.type] || TYPES.sign;
+    L.circleMarker([d.lat, d.lng], {
+      radius:8, color:'#fff', weight:2.5, fillColor:t.color, fillOpacity:.95
+    }).bindPopup(popupHTML(d)).addTo(pinLayer);
+
+    L.circle([d.lat, d.lng], {
+      radius:COVER_RADIUS_M, color:t.color, weight:1, opacity:.28,
+      fillColor:t.color, fillOpacity:.09, interactive:false
+    }).addTo(coverLayer);
+  });
+
+  // heat — weight bigger drops heavier so a 100-flyer stop reads hotter
+  heatLayer.setLatLngs(list.map(d=>{
+    const q = Number(d.qty)||1;
+    return [d.lat, d.lng, Math.min(1, 0.35 + Math.log10(q+1)*0.35)];
+  }));
+
+  renderStats();
+  renderList(list);
+  $('#cnt').textContent = drops.length;
+}
+
+function popupHTML(d){
+  const t = TYPES[d.type] || TYPES.sign;
+  const when = new Date(d.ts).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  return `<b>${t.emoji} ${esc(d.place || t.label)}</b><br>
+    ${d.qty||1} × ${t.label.toLowerCase()}<br>
+    <span style="color:#64748b">${esc(d.who||'—')} · ${when}</span>
+    ${d.notes?`<br><i style="color:#475569">${esc(d.notes)}</i>`:''}`;
+}
+
+function renderStats(){
+  let signs=0, flyers=0, people=new Set();
+  drops.forEach(d=>{
+    const q = Number(d.qty)||1;
+    if(d.type==='sign') signs += q;
+    else if(d.type==='flyer') flyers += q;
+    else { signs += 1; flyers += q; }
+    if(d.who) people.add(d.who.trim().toLowerCase());
+  });
+  const week = drops.filter(d=> new Date(d.ts).getTime() >= Date.now()-7*864e5).length;
+  const areaMi2 = (drops.length * Math.PI * Math.pow(COVER_RADIUS_M/1609.34, 2) * 0.55).toFixed(1);
+
+  $('#stats').innerHTML = [
+    [drops.length, 'Stops'],
+    [signs, 'Signs out'],
+    [flyers.toLocaleString(), 'Flyers'],
+    [week, 'This week'],
+    ['~' + areaMi2, 'Sq mi covered'],
+    [people.size, people.size===1?'Person':'People'],
+  ].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
+}
+
+function renderList(list){
+  const box = $('#entries');
+  if(!list.length){
+    box.innerHTML = `<div class="empty"><div>🗺️</div><p>${drops.length?'Nothing matches that filter.':'No drops logged yet.<br>Tap <b>＋ Log a drop</b> to start covering Tally.'}</p></div>`;
+    return;
+  }
+  const sorted = [...list].sort((a,b)=> new Date(b.ts) - new Date(a.ts));
+  box.innerHTML = sorted.map(d=>{
+    const t = TYPES[d.type] || TYPES.sign;
+    const when = new Date(d.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<div class="entry">
+      <div class="edot" style="background:${t.color}"></div>
+      <div class="einfo">
+        <b>${t.emoji} ${esc(d.place || t.label)}</b>
+        <div class="meta">${d.qty||1} × ${t.label.toLowerCase()} · ${esc(d.who||'—')} · ${when}</div>
+        ${d.notes?`<div class="note">${esc(d.notes)}</div>`:''}
+      </div>
+      <div class="eacts">
+        <button data-go="${d.id}" title="Show on map">🔍</button>
+        <button data-del="${d.id}" class="del" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------------- UI helpers ---------------- */
+let toastT;
+function toast(msg, kind){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.className = 'on' + (kind ? ' ' + kind : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=> el.className = '', 3200);
+}
+function banner(html){
+  const el = $('#banner');
+  if(!html){ el.className=''; return; }
+  el.innerHTML = html; el.className = 'on';
+}
+function openSheet(id){
+  closeSheets();
+  $(id).classList.add('open');
+  $('#scrim').classList.add('on');
+}
+function closeSheets(){
+  $$('.sheet').forEach(s=>s.classList.remove('open'));
+  $('#scrim').classList.remove('on');
+}
+
+/* ---------------- location picking ---------------- */
+function setPicked(lat, lng, label){
+  picked = {lat:+lat, lng:+lng, label: label||''};
+  $('#pinned').className = 'pinned on';
+  $('#pinned').innerHTML = `📍 <b>Location set</b>${label?' — '+esc(label):''}
+    <span class="coords">${(+lat).toFixed(5)}, ${(+lng).toFixed(5)}</span>`;
+  if(label && !$('#fPlace').value.trim()) $('#fPlace').value = label;
+  map.setView([lat,lng], Math.max(map.getZoom(), 15));
+}
+
+$('#gpsBtn').addEventListener('click', ()=>{
+  if(!navigator.geolocation) return toast('This browser has no GPS support', 'err');
+  const b = $('#gpsBtn');
+  b.disabled = true; b.textContent = '🛰️ Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    p=>{
+      b.disabled = false; b.textContent = '🎯 Use my current location';
+      setPicked(p.coords.latitude, p.coords.longitude);
+      toast('Got you — accurate to ~' + Math.round(p.coords.accuracy) + ' m');
+    },
+    err=>{
+      b.disabled = false; b.textContent = '🎯 Use my current location';
+      toast(err.code===1 ? 'Location blocked — allow it in your browser settings'
+                         : 'Couldn\'t get GPS. Try Tap map or Search instead.', 'err');
+    },
+    {enableHighAccuracy:true, timeout:12000, maximumAge:0}
+  );
+});
+
+$('#tapBtn').addEventListener('click', ()=>{
+  tapping = true;
+  closeSheets();
+  $('#crosshair').classList.add('on');
+  $('#tapmode').classList.add('on');
+});
+$('#tapConfirm').addEventListener('click', ()=>{
+  const c = map.getCenter();
+  endTap();
+  setPicked(c.lat, c.lng);
+  openSheet('#addSheet');
+});
+function endTap(){
+  tapping = false;
+  $('#crosshair').classList.remove('on');
+  $('#tapmode').classList.remove('on');
+}
+map.on('click', e=>{ if(tapping){ endTap(); setPicked(e.latlng.lat, e.latlng.lng); openSheet('#addSheet'); } });
+
+async function doSearch(){
+  const q = $('#fSearch').value.trim();
+  if(!q) return;
+  const btn = $('#searchBtn');
+  btn.disabled = true; btn.textContent = 'Searching…';
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&bounded=1'
+      + '&viewbox=-84.53,30.61,-84.05,30.29'
+      + '&q=' + encodeURIComponent(q + (/tallahassee|fl\b|florida/i.test(q) ? '' : ', Tallahassee, FL'));
+    const res = await (await fetch(url)).json();
+    if(!res.length){ $('#searchResults').innerHTML = '<p class="hint">No match in Tallahassee. Try a street address, or use Tap map.</p>'; return; }
+    $('#searchResults').innerHTML = res.map(r=>{
+      const parts = r.display_name.split(',');
+      return `<button data-lat="${r.lat}" data-lng="${r.lon}" data-label="${esc(parts[0].trim())}">
+        <b>${esc(parts[0].trim())}</b><span>${esc(parts.slice(1,4).join(',').trim())}</span></button>`;
+    }).join('');
+  }catch{
+    $('#searchResults').innerHTML = '<p class="hint">Search failed — you may be offline. Use Tap map or GPS.</p>';
+  }finally{
+    btn.disabled = false; btn.textContent = '🔍 Search Tallahassee';
+  }
+}
+$('#searchBtn').addEventListener('click', doSearch);
+$('#fSearch').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } });
+$('#searchResults').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  setPicked(b.dataset.lat, b.dataset.lng, b.dataset.label);
+  $('#searchResults').innerHTML = '';
+});
+
+/* ---------------- form ---------------- */
+$('#segType').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#segType button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  curType = b.dataset.v;
+  $('#fQty').value = TYPES[curType].defQty;
+});
+$('.loctabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  $$('.loctabs button').forEach(x=>x.classList.remove('on'));
+  $$('.locpane').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  $(`.locpane[data-pane="${b.dataset.tab}"]`).classList.add('on');
+});
+$('#qMinus').addEventListener('click', ()=>{ const i=$('#fQty'); i.value = Math.max(1, (+i.value||1) - (+i.value>25?5:1)); });
+$('#qPlus') .addEventListener('click', ()=>{ const i=$('#fQty'); i.value = (+i.value||0) + (+i.value>=25?5:1); });
+
+$('#saveBtn').addEventListener('click', async ()=>{
+  if(!picked) return toast('Pick a location first — GPS, tap the map, or search', 'err');
+  const who = $('#fWho').value.trim();
+  if(!who) { $('#fWho').focus(); return toast('Add your name so the team knows who covered it', 'err'); }
+  localStorage.setItem(LS_WHO, who);
+
+  const drop = {
+    id: 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    ts: new Date().toISOString(),
+    lat: picked.lat, lng: picked.lng,
+    type: curType,
+    qty: Math.max(1, +$('#fQty').value || 1),
+    place: $('#fPlace').value.trim(),
+    notes: $('#fNotes').value.trim(),
+    who,
+  };
+
+  const btn = $('#saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  drops.push(drop); saveLocal(); render();
+
+  try{
+    if(!API_URL) throw new Error('local only');
+    await apiPost({action:'add', drop});
+    toast('✓ Saved & shared with the team');
+  }catch{
+    if(API_URL){ pending.push({action:'add', drop}); saveQueue();
+      toast('Saved on this phone — will upload when you get signal', 'warn');
+    } else {
+      toast('Saved on this device (backend not connected yet)', 'warn');
+    }
+  }
+
+  btn.disabled = false; btn.textContent = '✓ Save to map';
+  resetForm();
+  closeSheets();
+  map.setView([drop.lat, drop.lng], Math.max(map.getZoom(), 14));
+});
+
+function resetForm(){
+  picked = null;
+  $('#pinned').className = 'pinned';
+  $('#fPlace').value = ''; $('#fNotes').value = '';
+  $('#fSearch').value = ''; $('#searchResults').innerHTML = '';
+  $('#fQty').value = TYPES[curType].defQty;
+}
+
+/* ---------------- list actions ---------------- */
+$('#entries').addEventListener('click', async e=>{
+  const go = e.target.closest('[data-go]');
+  const del = e.target.closest('[data-del]');
+  if(go){
+    const d = drops.find(x=>x.id===go.dataset.go); if(!d) return;
+    closeSheets(); map.setView([d.lat,d.lng], 16);
+    L.popup().setLatLng([d.lat,d.lng]).setContent(popupHTML(d)).openOn(map);
+  }
+  if(del){
+    const d = drops.find(x=>x.id===del.dataset.del); if(!d) return;
+    if(!confirm(`Delete "${d.place || TYPES[d.type].label}"?\n\nThis removes it for the whole team.`)) return;
+    drops = drops.filter(x=>x.id!==d.id); saveLocal(); render();
+    try{
+      if(!API_URL) throw new Error('local only');
+      await apiPost({action:'delete', id:d.id});
+      toast('Deleted');
+    }catch{
+      if(API_URL){ pending.push({action:'delete', id:d.id}); saveQueue(); toast('Deleted locally — syncs later','warn'); }
+      else toast('Deleted');
+    }
+  }
+});
+
+$('#filters').addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if(!b) return;
+  $$('#filters .chip').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); curFilter = b.dataset.f; render();
+});
+
+$('#exportBtn').addEventListener('click', ()=>{
+  const rows = [['Date','Type','Quantity','Place','Notes','Logged by','Latitude','Longitude']];
+  [...drops].sort((a,b)=> new Date(a.ts)-new Date(b.ts)).forEach(d=>{
+    rows.push([new Date(d.ts).toLocaleString(), TYPES[d.type]?.label||d.type, d.qty||1,
+               d.place||'', d.notes||'', d.who||'', d.lat, d.lng]);
+  });
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'soccer-shots-tallahassee-coverage.csv';
+  a.click();
+  toast('CSV downloaded');
+});
+
+/* ---------------- layer toggles ---------------- */
+function toggleLayer(btn, layer){
+  const on = btn.classList.toggle('on');
+  if(on) map.addLayer(layer); else map.removeLayer(layer);
+}
+$('#tHeat') .addEventListener('click', e=> toggleLayer(e.currentTarget, heatLayer));
+$('#tCover').addEventListener('click', e=> toggleLayer(e.currentTarget, coverLayer));
+$('#tPins') .addEventListener('click', e=> toggleLayer(e.currentTarget, pinLayer));
+
+$('#tLocate').addEventListener('click', ()=>{
+  if(!navigator.geolocation) return toast('No GPS support here', 'err');
+  toast('Finding you…');
+  navigator.geolocation.getCurrentPosition(p=>{
+    const ll = [p.coords.latitude, p.coords.longitude];
+    if(meMarker) map.removeLayer(meMarker);
+    meMarker = L.circleMarker(ll, {radius:8, color:'#fff', weight:3, fillColor:'#2563eb', fillOpacity:1})
+      .bindPopup('You are here').addTo(map);
+    map.setView(ll, 15);
+  }, ()=> toast('Couldn\'t get your location', 'err'), {enableHighAccuracy:true, timeout:12000});
+});
+
+$('#tSync').addEventListener('click', ()=> sync(false));
+
+/* ---------------- sheet wiring ---------------- */
+$('#logBtn').addEventListener('click', ()=>{
+  $('#fWho').value = localStorage.getItem(LS_WHO) || '';
+  openSheet('#addSheet');
+});
+$('#listBtn').addEventListener('click', ()=> openSheet('#listSheet'));
+$('#scrim').addEventListener('click', closeSheets);
+$$('[data-close]').forEach(b=> b.addEventListener('click', closeSheets));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeSheets(); endTap(); } });
+
+/* ---------------- boot ---------------- */
+drops = loadLocal();
+pending = loadQueue();
+render();
+sync(true);
+window.addEventListener('online', ()=> sync(true));
+setInterval(()=> sync(true), 60000);   // keep the team's view fresh
+</script>
+</body>
+</html>
