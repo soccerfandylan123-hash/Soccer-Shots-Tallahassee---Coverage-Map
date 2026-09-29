@@ -1198,19 +1198,23 @@ const map = L.map('map', {
   tap: true,
 }).setMaxZoom(18);
 
-const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19, subdomains:'abcd'
+/* Basemap must be keyless. CARTO's free tiles started returning a valid image
+   with "API KEY REQUIRED" printed across it — HTTP 200, so nothing errors and
+   no fallback fires; the map just becomes unreadable. Esri's World Street Map
+   needs no key and no account. */
+const baseTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS', maxZoom:19
 }).addTo(map);
 
-/* Some office and school networks block one tile host but not the other. A few
-   failures in a row (not one stray 404) swaps the whole basemap over. */
+/* If that host is blocked on someone's network, a few failures in a row (not one
+   stray 404) swap the whole basemap to OpenStreetMap. */
 let tileFails = 0, tilesSwapped = false;
 baseTiles.on('tileerror', ()=>{
   if(tilesSwapped || ++tileFails < 4) return;
   tilesSwapped = true;
   map.removeLayer(baseTiles);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'&copy; OpenStreetMap', maxZoom:19
+    attribution:'&copy; OpenStreetMap contributors', maxZoom:19
   }).addTo(map);
 });
 baseTiles.on('load', ()=>{ tileFails = 0; });
