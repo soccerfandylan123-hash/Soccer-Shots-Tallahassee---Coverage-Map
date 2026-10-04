@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f2b46">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Soccer Shots Tallahassee — Coverage Map</title>
+<title>Soccer Shots — Outreach Coverage Map</title>
 
 <style>
 /* Leaflet 1.9.4 stylesheet, embedded so the map works with no CDN. */
@@ -911,6 +911,75 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
 }
 .editnote.on{display:block}
 
+/* ---------- cover page / territory picker ---------- */
+#cover{
+  position:fixed;inset:0;z-index:7000;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:linear-gradient(170deg,#0f2b46 0%,#17395c 58%,#1d4a79 100%);
+}
+#cover.hidden{display:none}
+.cv-wrap{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:calc(var(--safe-t) + 34px) 20px calc(var(--safe-b) + 30px)}
+.cv-inner{width:100%;max-width:560px}
+.cv-brand{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.cv-ball{width:48px;height:48px;flex:0 0 48px;border-radius:50%;background:var(--green);
+  display:grid;place-items:center;font-size:26px;box-shadow:0 5px 16px rgba(0,0,0,.32)}
+.cv-brand h1{margin:0;font-size:21px;font-weight:800;color:#fff;letter-spacing:.2px;line-height:1.2}
+.cv-brand p{margin:4px 0 0;font-size:10.5px;font-weight:700;letter-spacing:1.4px;
+  text-transform:uppercase;color:#8fb4d6}
+.cv-lede{color:#d4e3f0;font-size:15px;line-height:1.65;margin:0 0 22px}
+.cv-steps{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:11px}
+.cv-steps li{display:flex;gap:11px;align-items:flex-start;color:#c8dcec;font-size:13.5px;line-height:1.5}
+.cv-steps b{flex:0 0 22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);
+  color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;margin-top:1px}
+.cv-card{background:var(--card);border-radius:16px;padding:20px;
+  box-shadow:0 18px 46px rgba(0,0,0,.3);margin-bottom:18px}
+.cv-card h2{margin:0 0 5px;font-size:16.5px;font-weight:800}
+.cv-card .sub{margin:0 0 15px;font-size:13px;color:var(--muted);line-height:1.5}
+#citySel{width:100%;height:50px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--bg);padding:0 12px;font-size:16px;font-weight:600;color:var(--text)}
+#goBtn{width:100%;height:52px;margin-top:11px;border-radius:12px;background:var(--green);
+  color:#fff;font-size:16px;font-weight:800;box-shadow:0 6px 20px rgba(63,174,73,.34)}
+#goBtn:disabled{background:#cbd5df;box-shadow:none;cursor:default}
+#cityNote{margin:13px 0 0;font-size:12.5px;line-height:1.6;color:var(--muted)}
+#cityNote a{color:var(--blue);font-weight:700}
+.cv-contact{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:16px 18px}
+.cv-contact h3{margin:0 0 11px;font-size:10px;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;color:#8fb4d6}
+.cv-contact .nm{color:#fff;font-size:15.5px;font-weight:800;margin:0}
+.cv-contact .ttl{color:#9db8d1;font-size:12.5px;margin:2px 0 12px}
+.cv-contact a{display:flex;align-items:center;gap:9px;color:#e6f0f9;font-size:14px;
+  font-weight:600;padding:6px 0;text-decoration:none}
+.cv-contact a:hover{color:#fff;text-decoration:underline}
+.cv-foot{margin:22px 0 0;text-align:center;color:#7ea0be;font-size:11.5px;line-height:1.65}
+
+/* "Change territory" pill in the map header */
+#changeCity{margin-left:auto;flex:0 0 auto;background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.22);color:#fff;font-size:11px;font-weight:700;
+  padding:7px 11px;border-radius:9px;letter-spacing:.2px}
+
+/* ---------- map key ---------- */
+.keysec{margin:18px 0 6px;font-size:10px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted)}
+.keysec:first-child{margin-top:0}
+.keyrow{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.keyrow:last-child{border-bottom:0}
+.keydot{flex:0 0 18px;height:18px;border-radius:50%;border:2.5px solid #fff;
+  box-shadow:0 0 0 1.5px var(--line);margin-top:2px}
+.keyring{flex:0 0 18px;height:18px;border-radius:50%;margin-top:2px;border:1.5px solid}
+.keyico{flex:0 0 18px;font-size:15px;text-align:center;margin-top:1px}
+.keytxt b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
+.keytxt span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.keygrad{height:14px;border-radius:7px;margin:9px 0 6px;
+  background:linear-gradient(90deg,#2563eb,#22c55e,#facc15,#f97316,#dc2626)}
+.keyscale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700}
+.infotext{font-size:14px;line-height:1.7;color:var(--text);margin:0}
+
+/* tappable stat chips */
+.stat{cursor:pointer;text-align:left;font-family:inherit}
+.stat:active{transform:scale(.95)}
+.stat.keychip b{font-size:14px}
+
 .empty{text-align:center;padding:36px 20px;color:var(--muted)}
 .empty div{font-size:38px;margin-bottom:10px;opacity:.55}
 .empty p{margin:0;font-size:13.5px;line-height:1.6}
@@ -986,6 +1055,52 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
   </div>
 </div>
 
+<section id="cover">
+  <div class="cv-wrap">
+    <div class="cv-inner">
+
+      <div class="cv-brand">
+        <div class="cv-ball">⚽</div>
+        <div>
+          <h1>Soccer Shots</h1>
+          <p>Outreach Coverage Map</p>
+        </div>
+      </div>
+
+      <p class="cv-lede">A shared, live record of where our yard signs and flyers have been
+      placed. Each territory gets its own map, so coaches and staff can see exactly which
+      neighborhoods have been covered, find the gaps that are still open, and plan the next
+      push with real numbers instead of guesswork.</p>
+
+      <ol class="cv-steps">
+        <li><b>1</b><span>Select your territory below to open its coverage map.</span></li>
+        <li><b>2</b><span>Log each stop from your phone as you place signs or hand out flyers.</span></li>
+        <li><b>3</b><span>Coverage builds on the map instantly for everyone on your team.</span></li>
+      </ol>
+
+      <div class="cv-card">
+        <h2>Select your territory</h2>
+        <p class="sub">Choose the city you are placing signs and flyers in.</p>
+        <select id="citySel" aria-label="Select your territory"></select>
+        <button id="goBtn" disabled>View coverage map</button>
+        <p id="cityNote"></p>
+      </div>
+
+      <div class="cv-contact">
+        <h3>Program Contact</h3>
+        <p class="nm">Dylan Williamson</p>
+        <p class="ttl">Outreach Coverage Program</p>
+        <a href="tel:+18507288604">📞 (850) 728-8604</a>
+        <a href="mailto:soccerfandylan123@gmail.com">✉️ soccerfandylan123@gmail.com</a>
+      </div>
+
+      <p class="cv-foot">Soccer Shots Outreach Coverage Map<br>
+      Contact Dylan Williamson to activate a new territory.</p>
+
+    </div>
+  </div>
+</section>
+
 <div id="app">
   <div id="map"></div>
 
@@ -993,16 +1108,17 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
 
   <div id="tapmode">
     <span>Move the map to the spot</span>
-    <button id="tapConfirm">Drop here</button>
+    <button id="tapConfirm">Place the pin here</button>
   </div>
 
   <header id="topbar">
     <div class="brandrow">
       <div class="ball">⚽</div>
       <div class="brandtext">
-        <h1>Soccer Shots Tallahassee</h1>
+        <h1 id="cityTitle">Soccer Shots</h1>
         <p>Outreach Coverage Map</p>
       </div>
+      <button id="changeCity" title="Choose a different territory">Change</button>
     </div>
     <div id="stats"></div>
   </header>
@@ -1015,10 +1131,11 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
     <button class="ctl on" id="tPins" title="Pins">📍</button>
     <button class="ctl" id="tLocate" title="Find me">🎯</button>
     <button class="ctl" id="tSync" title="Refresh">🔄</button>
+    <button class="ctl" id="tKey" title="Map key">ℹ️</button>
   </div>
 
   <div id="bottombar">
-    <button id="logBtn">＋ Log a drop</button>
+    <button id="logBtn">＋ Log a stop</button>
     <button id="listBtn">📋<span class="count" id="cnt">0</span></button>
   </div>
 
@@ -1028,12 +1145,12 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
   <section class="sheet" id="addSheet">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <h2 id="addTitle">Log a drop</h2>
+      <h2 id="addTitle">Log a stop</h2>
       <button class="xbtn" data-close>✕</button>
     </div>
     <div class="sheet-body">
 
-      <div class="editnote" id="editNote">✏️ Editing an existing drop — saving replaces it for the whole team.</div>
+      <div class="editnote" id="editNote">✏️ Editing an existing stop. Saving replaces it for the whole team.</div>
 
       <div class="field">
         <p class="label">What did you drop?</p>
@@ -1070,17 +1187,17 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
 
           <div class="locpane on" data-pane="gps">
             <button class="btn dark" id="gpsBtn">🎯 Use my current location</button>
-            <p class="hint" style="margin-top:9px">Fastest option — tap this right as you finish putting the sign in.</p>
+            <p class="hint" style="margin-top:9px">The fastest option. Tap this as you finish placing the sign.</p>
           </div>
 
           <div class="locpane" data-pane="tap">
             <button class="btn dark" id="tapBtn">🗺️ Pick a spot on the map</button>
-            <p class="hint" style="margin-top:9px">Closes this panel so you can pan the map. Good for logging a batch later.</p>
+            <p class="hint" style="margin-top:9px">Closes this panel so you can move the map. Useful when logging several stops at once.</p>
           </div>
 
           <div class="locpane" data-pane="find">
-            <input class="inp" id="fSearch" placeholder="e.g. Tom Brown Park, 1234 Main St" autocomplete="off">
-            <button class="btn ghost" id="searchBtn" style="margin-top:8px">🔍 Search Tallahassee</button>
+            <input class="inp" id="fSearch" placeholder="Park, school, or street address" autocomplete="off">
+            <button class="btn ghost" id="searchBtn" style="margin-top:8px">🔍 Search</button>
             <div id="searchResults"></div>
           </div>
 
@@ -1090,17 +1207,17 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
 
       <div class="field">
         <p class="label">Place name <span style="text-transform:none;font-weight:600">(optional)</span></p>
-        <input class="inp" id="fPlace" placeholder="Publix on Thomasville, Kate Sullivan Elem…" autocomplete="off">
+        <input class="inp" id="fPlace" placeholder="School, park, church, or business name" autocomplete="off">
       </div>
 
       <div class="field">
         <p class="label">Notes <span style="text-transform:none;font-weight:600">(optional)</span></p>
-        <textarea class="inp" id="fNotes" placeholder="Got permission from manager, busy corner, re-check in 2 weeks…"></textarea>
+        <textarea class="inp" id="fNotes" placeholder="Permission from the manager, busy corner, check again in two weeks…"></textarea>
       </div>
 
       <div class="field">
         <p class="label">Your name</p>
-        <input class="inp" id="fWho" placeholder="Who's logging this?" autocomplete="name">
+        <input class="inp" id="fWho" placeholder="Your name" autocomplete="name">
       </div>
 
       <button class="btn primary" id="saveBtn" style="height:52px;font-size:16px">✓ Save to map</button>
@@ -1111,7 +1228,7 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
   <section class="sheet" id="listSheet">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <h2>All drops</h2>
+      <h2>All stops</h2>
       <div style="display:flex;gap:6px">
         <button class="xbtn" id="exportBtn" title="Download CSV">⬇</button>
         <button class="xbtn" data-close>✕</button>
@@ -1126,6 +1243,70 @@ textarea.inp{height:auto;padding:12px 13px;resize:vertical;min-height:60px;line-
         <button class="chip" data-f="week">📅 This week</button>
       </div>
       <div id="entries"></div>
+    </div>
+  </section>
+
+  <!-- STAT EXPLANATION SHEET -->
+  <section class="sheet" id="infoSheet">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <h2 id="infoTitle">About this figure</h2>
+      <button class="xbtn" data-close>✕</button>
+    </div>
+    <div class="sheet-body">
+      <p class="infotext" id="infoBody"></p>
+    </div>
+  </section>
+
+  <!-- MAP KEY SHEET -->
+  <section class="sheet" id="keySheet">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <h2>Map key</h2>
+      <button class="xbtn" data-close>✕</button>
+    </div>
+    <div class="sheet-body">
+
+      <p class="keysec">Pins — what was left at each stop</p>
+      <div class="keyrow">
+        <div class="keydot" style="background:#3fae49"></div>
+        <div class="keytxt"><b>Yard sign</b><span>One or more yard signs were placed at this location.</span></div>
+      </div>
+      <div class="keyrow">
+        <div class="keydot" style="background:#2563eb"></div>
+        <div class="keytxt"><b>Flyers</b><span>Flyers were handed out or left at this location.</span></div>
+      </div>
+      <div class="keyrow">
+        <div class="keydot" style="background:#f59e0b"></div>
+        <div class="keytxt"><b>Yard sign and flyers</b><span>Both were left at this location on the same visit.</span></div>
+      </div>
+      <p class="hint" style="margin:11px 0 0">Tap any pin on the map to see the place name, the quantity, who logged it and when.</p>
+
+      <p class="keysec">Shaded circles — the area each stop reaches</p>
+      <div class="keyrow">
+        <div class="keyring" style="background:rgba(63,174,73,.12);border-color:rgba(63,174,73,.5)"></div>
+        <div class="keytxt"><b>Approximately a half mile across</b><span>Each circle marks roughly the
+        area a single stop is expected to reach. Where circles overlap, coverage is strong.
+        To find the gaps, turn the heat map off and look for the open white space between circles.</span></div>
+      </div>
+
+      <p class="keysec">Heat map — how heavily an area is covered</p>
+      <div class="keygrad"></div>
+      <div class="keyscale"><span>Light coverage</span><span>Heavy coverage</span></div>
+      <p class="hint" style="margin-top:9px">Warmer colors mean more signs and flyers are
+      concentrated in that area. Larger quantities at a single stop count more heavily.</p>
+
+      <p class="keysec">Buttons along the right edge</p>
+      <div class="keyrow"><div class="keyico">🔥</div><div class="keytxt"><b>Heat map</b><span>Show or hide the coverage shading.</span></div></div>
+      <div class="keyrow"><div class="keyico">⭕</div><div class="keytxt"><b>Coverage circles</b><span>Show or hide the reach circles. Best used with the heat map off.</span></div></div>
+      <div class="keyrow"><div class="keyico">📍</div><div class="keytxt"><b>Pins</b><span>Show or hide the individual stop markers.</span></div></div>
+      <div class="keyrow"><div class="keyico">🎯</div><div class="keytxt"><b>Find me</b><span>Center the map on your current location.</span></div></div>
+      <div class="keyrow"><div class="keyico">🔄</div><div class="keytxt"><b>Refresh</b><span>Pull the latest records from the team. The map also refreshes on its own every minute.</span></div></div>
+
+      <p class="keysec">Logging and reviewing stops</p>
+      <div class="keyrow"><div class="keyico">＋</div><div class="keytxt"><b>Log a stop</b><span>Record a new stop. Set the date back if you are entering work from an earlier day.</span></div></div>
+      <div class="keyrow"><div class="keyico">📋</div><div class="keytxt"><b>All stops</b><span>Review every stop, filter the list, edit an entry with the pencil, or export the records to a spreadsheet.</span></div></div>
+
     </div>
   </section>
 
@@ -1157,7 +1338,8 @@ L.HeatLayer=(L.Layer?L.Layer:L.Class).extend({initialize:function(t,i){this._lat
 </script>
 <script>
 /* Shared-database endpoint (Google Apps Script web app). Already connected —
-   nothing to fill in here. */const API_URL = 'https://script.google.com/macros/s/AKfycbxCiZw-_bWy7Bxj3_eRg0DLaL6Jk-nPWk0nJfc6G4WHRNDIkSSojjYmKtYzPpz3O8xhcA/exec';
+   nothing to fill in here. */
+let API_URL = '';   // set when a territory is opened
 /* ========================================================================== */
 
 /* If the mapping library somehow didn't run, say so in words rather than
@@ -1166,11 +1348,36 @@ function showFatal(){ var f = document.getElementById('fatal'); if(f) f.classNam
 window.addEventListener('error', showFatal);
 if(typeof L === 'undefined'){ showFatal(); throw new Error('Leaflet failed to load'); }
 
-const TLH = [30.4383, -84.2807];          // downtown Tallahassee
-const TLH_BOUNDS = [[30.29, -84.53], [30.61, -84.05]];
+/* ---------------------------------------------------------------------------
+   TERRITORIES
+
+   Every territory keeps its own records in its own Google Sheet, so one city's
+   data can never land on another city's map. To bring a new territory online:
+   follow SETUP.md for that city, then add one entry to this list.
+
+     id     short code used in the web address (lowercase, no spaces)
+     name   how the territory is shown on screen
+     center [latitude, longitude] the map opens on
+     bounds [[south, west], [north, east]] of the metro area
+     api    that territory's Apps Script web app address
+   --------------------------------------------------------------------------- */
+const CITIES = [
+  {
+    id:     'tallahassee',
+    name:   'Tallahassee, FL',
+    center: [30.4383, -84.2807],
+    bounds: [[30.29, -84.53], [30.61, -84.05]],
+    api:    'https://script.google.com/macros/s/AKfycbxCiZw-_bWy7Bxj3_eRg0DLaL6Jk-nPWk0nJfc6G4WHRNDIkSSojjYmKtYzPpz3O8xhcA/exec'
+  },
+];
+
+const CONTACT_EMAIL = 'soccerfandylan123@gmail.com';
+
+let CITY = null;          // the territory currently being viewed
 const COVER_RADIUS_M = 700;                // ~0.45 mi "we blanketed this" radius
-const LS_KEY = 'ssmap_drops_v1';
-const LS_QUEUE = 'ssmap_queue_v1';
+let LS_KEY = '';          // set per territory, so records never mix
+let LS_QUEUE = '';
+const LS_SEENKEY = 'ssmap_seen_key_v1';
 const LS_WHO = 'ssmap_who_v1';
 
 const TYPES = {
@@ -1193,9 +1400,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------------- map ---------------- */
 const map = L.map('map', {
-  center: TLH, zoom: 12, zoomControl: true,
-  maxBounds: L.latLngBounds(TLH_BOUNDS).pad(0.6),
-  tap: true,
+  center: [39.5, -98.35], zoom: 4, zoomControl: true, tap: true,
 }).setMaxZoom(18);
 
 /* Basemap must be keyless. CARTO's free tiles started returning a valid image
@@ -1227,6 +1432,12 @@ let   heatLayer  = L.heatLayer([], {
 }).addTo(map);
 
 /* ---------------- storage ---------------- */
+/* Safari in Lockdown Mode, private windows and "block all cookies" all make
+   localStorage throw on access rather than return null. Reading it must never
+   be able to take the page down. */
+const lsGet = k => { try{ return localStorage.getItem(k); }catch{ return null; } };
+const lsSet = (k,v) => { try{ localStorage.setItem(k,v); }catch{} };
+
 const loadLocal  = () => { try{ return JSON.parse(localStorage.getItem(LS_KEY)) || [] }catch{ return [] } };
 const saveLocal  = () => { try{ localStorage.setItem(LS_KEY, JSON.stringify(drops)) }catch{} };
 const loadQueue  = () => { try{ return JSON.parse(localStorage.getItem(LS_QUEUE)) || [] }catch{ return [] } };
@@ -1267,7 +1478,7 @@ async function flushQueue(){
 async function sync(quiet){
   if(!API_URL){
     drops = loadLocal(); render();
-    banner(`<b>⚠️ This copy isn't connected to the team sheet</b>Anything logged here stays on this device. Use the shared link the team uses, or see SETUP.md to reconnect this copy.`);
+    banner(`<b>⚠️ This copy is not connected to the shared records</b>Anything logged here stays on this device. Open the link your team uses, or see SETUP.md to reconnect this copy.`);
     return;
   }
   try{
@@ -1276,17 +1487,17 @@ async function sync(quiet){
     const server = await apiGet();
     drops = server; saveLocal(); render();
     banner(null);
-    if(!quiet) toast(`Synced — ${drops.length} drop${drops.length===1?'':'s'} on the map`);
+    if(!quiet) toast(`Up to date — ${drops.length} stop${drops.length===1?'':'s'} on the map.`);
   }catch(e){
     drops = loadLocal(); render();
-    banner(`<b>📴 Offline — showing last synced data</b>Anything you log is saved on this phone and uploads automatically when you're back on signal.${pending.length?` (${pending.length} waiting)`:''}`);
-    if(!quiet) toast('Couldn\'t reach the sheet — working offline', 'warn');
+    banner(`<b>📴 Offline — showing the last saved records</b>Anything you log is saved on this device and uploads automatically when you are back online.${pending.length?` (${pending.length} waiting to upload)`:''}`);
+    if(!quiet) toast('Could not reach the shared records. Working offline.', 'warn');
   }
 }
 
 /* ---------------- rendering ---------------- */
 function visible(){
-  const who = (localStorage.getItem(LS_WHO)||'').trim().toLowerCase();
+  const who = (lsGet(LS_WHO)||'').trim().toLowerCase();
   const weekAgo = Date.now() - 7*864e5;
   return drops.filter(d=>{
     if(curFilter==='sign')  return d.type==='sign' || d.type==='both';
@@ -1348,19 +1559,41 @@ function renderStats(){
   const areaMi2 = (drops.length * Math.PI * Math.pow(COVER_RADIUS_M/1609.34, 2) * 0.55).toFixed(1);
 
   $('#stats').innerHTML = [
-    [drops.length, 'Stops'],
-    [signs, 'Signs out'],
-    [flyers.toLocaleString(), 'Flyers'],
-    [week, 'This week'],
-    ['~' + areaMi2, 'Sq mi covered'],
-    [people.size, people.size===1?'Person':'People'],
-  ].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
+    [drops.length, 'Stops', 'stops'],
+    [signs, 'Signs out', 'signs'],
+    [flyers.toLocaleString(), 'Flyers', 'flyers'],
+    [week, 'This week', 'week'],
+    ['~' + areaMi2, 'Sq mi covered', 'area'],
+    [people.size, people.size===1?'Person':'People', 'people'],
+  ].map(([v,l,k])=>`<button class="stat" data-stat="${k}"><b>${v}</b><span>${l}</span></button>`).join('')
+   + `<button class="stat keychip" data-stat="__key"><b>ℹ️</b><span>Key</span></button>`;
 }
+
+/* Plain-language explanation behind every figure in the header. */
+const STAT_INFO = {
+  stops:  ['Stops', 'Every logged visit to a location counts as one stop. A single stop may include several yard signs, a stack of flyers, or both.'],
+  signs:  ['Signs out', 'The total number of yard signs placed across every stop in this territory.'],
+  flyers: ['Flyers', 'The total number of flyers handed out or left at locations across every stop in this territory.'],
+  week:   ['This week', 'Stops logged in the past seven days. Entries that were backdated count toward the day the work actually happened, not the day they were typed in.'],
+  area:   ['Square miles covered', 'An estimate of the ground within reach of our signs and flyers. Each stop is treated as covering a 0.45 mile radius, and the total is then reduced by 45 percent to allow for stops whose circles overlap. Treat it as a planning guide rather than a surveyed measurement.'],
+  people: ['People', 'The number of team members who have logged at least one stop in this territory.'],
+};
+
+$('#stats').addEventListener('click', e=>{
+  const b = e.target.closest('[data-stat]');
+  if(!b) return;
+  if(b.dataset.stat === '__key') return openSheet('#keySheet');
+  const info = STAT_INFO[b.dataset.stat];
+  if(!info) return;
+  $('#infoTitle').textContent = info[0];
+  $('#infoBody').textContent  = info[1];
+  openSheet('#infoSheet');
+});
 
 function renderList(list){
   const box = $('#entries');
   if(!list.length){
-    box.innerHTML = `<div class="empty"><div>🗺️</div><p>${drops.length?'Nothing matches that filter.':'No drops logged yet.<br>Tap <b>＋ Log a drop</b> to start covering Tally.'}</p></div>`;
+    box.innerHTML = `<div class="empty"><div>🗺️</div><p>${drops.length?'No stops match that filter.':'No stops logged yet.<br>Tap <b>＋ Log a stop</b> to record the first one.'}</p></div>`;
     return;
   }
   const sorted = [...list].sort((a,b)=> new Date(b.ts) - new Date(a.ts));
@@ -1442,19 +1675,19 @@ function setPicked(lat, lng, label){
 }
 
 $('#gpsBtn').addEventListener('click', ()=>{
-  if(!navigator.geolocation) return toast('This browser has no GPS support', 'err');
+  if(!navigator.geolocation) return toast('This browser does not support location services.', 'err');
   const b = $('#gpsBtn');
   b.disabled = true; b.textContent = '🛰️ Getting your location…';
   navigator.geolocation.getCurrentPosition(
     p=>{
       b.disabled = false; b.textContent = '🎯 Use my current location';
       setPicked(p.coords.latitude, p.coords.longitude);
-      toast('Got you — accurate to ~' + Math.round(p.coords.accuracy) + ' m');
+      toast('Location found, accurate to about ' + Math.round(p.coords.accuracy) + ' meters.');
     },
     err=>{
       b.disabled = false; b.textContent = '🎯 Use my current location';
-      toast(err.code===1 ? 'Location blocked — allow it in your browser settings'
-                         : 'Couldn\'t get GPS. Try Tap map or Search instead.', 'err');
+      toast(err.code===1 ? 'Location access is blocked. Allow it in your browser settings.'
+                         : 'Could not get your location. Try Tap map or Search instead.', 'err');
     },
     {enableHighAccuracy:true, timeout:12000, maximumAge:0}
   );
@@ -1485,20 +1718,24 @@ async function doSearch(){
   const btn = $('#searchBtn');
   btn.disabled = true; btn.textContent = 'Searching…';
   try{
+    const bb = CITY.bounds;                       // [[south, west], [north, east]]
+    const viewbox = [bb[0][1], bb[1][0], bb[1][1], bb[0][0]].join(',');
+    const town = CITY.name.split(',')[0];
+    const q2 = q.toLowerCase().includes(town.toLowerCase()) ? q : q + ', ' + CITY.name;
     const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&bounded=1'
-      + '&viewbox=-84.53,30.61,-84.05,30.29'
-      + '&q=' + encodeURIComponent(q + (/tallahassee|fl\b|florida/i.test(q) ? '' : ', Tallahassee, FL'));
+      + '&viewbox=' + viewbox
+      + '&q=' + encodeURIComponent(q2);
     const res = await (await fetch(url)).json();
-    if(!res.length){ $('#searchResults').innerHTML = '<p class="hint">No match in Tallahassee. Try a street address, or use Tap map.</p>'; return; }
+    if(!res.length){ $('#searchResults').innerHTML = `<p class="hint">No match found in ${esc(town)}. Try a street address, or use Tap map.</p>`; return; }
     $('#searchResults').innerHTML = res.map(r=>{
       const parts = r.display_name.split(',');
       return `<button data-lat="${r.lat}" data-lng="${r.lon}" data-label="${esc(parts[0].trim())}">
         <b>${esc(parts[0].trim())}</b><span>${esc(parts.slice(1,4).join(',').trim())}</span></button>`;
     }).join('');
   }catch{
-    $('#searchResults').innerHTML = '<p class="hint">Search failed — you may be offline. Use Tap map or GPS.</p>';
+    $('#searchResults').innerHTML = '<p class="hint">Search is unavailable, which usually means you are offline. Use Tap map or GPS instead.</p>';
   }finally{
-    btn.disabled = false; btn.textContent = '🔍 Search Tallahassee';
+    btn.disabled = false; btn.textContent = '🔍 Search ' + CITY.name.split(',')[0];
   }
 }
 $('#searchBtn').addEventListener('click', doSearch);
@@ -1528,10 +1765,10 @@ $('#qMinus').addEventListener('click', ()=>{ const i=$('#fQty'); i.value = Math.
 $('#qPlus') .addEventListener('click', ()=>{ const i=$('#fQty'); i.value = (+i.value||0) + (+i.value>=25?5:1); });
 
 $('#saveBtn').addEventListener('click', async ()=>{
-  if(!picked) return toast('Pick a location first — GPS, tap the map, or search', 'err');
+  if(!picked) return toast('Choose a location first using GPS, the map, or search.', 'err');
   const who = $('#fWho').value.trim();
-  if(!who) { $('#fWho').focus(); return toast('Add your name so the team knows who covered it', 'err'); }
-  localStorage.setItem(LS_WHO, who);
+  if(!who) { $('#fWho').focus(); return toast('Add your name so the team knows who covered this stop.', 'err'); }
+  lsSet(LS_WHO, who);
 
   const oldId = editingId;              // set only while editing an existing drop
   const drop = {
@@ -1565,9 +1802,9 @@ $('#saveBtn').addEventListener('click', async ()=>{
       // Queued in this order; deleting an already-deleted row is a harmless no-op.
       if(oldId) pending.push({action:'delete', id:oldId});
       pending.push({action:'add', drop}); saveQueue();
-      toast('Saved on this phone — will upload when you get signal', 'warn');
+      toast('Saved on this device. It will upload automatically when you are back online.', 'warn');
     } else {
-      toast('Saved on this device (backend not connected yet)', 'warn');
+      toast('Saved on this device only. This copy is not connected to the shared records.', 'warn');
     }
   }
 
@@ -1586,8 +1823,8 @@ function openEdit(d){
   $('#fWhen').value  = toLocalInput(new Date(d.ts));
   $('#fPlace').value = d.place || '';
   $('#fNotes').value = d.notes || '';
-  $('#fWho').value   = d.who || localStorage.getItem(LS_WHO) || '';
-  $('#addTitle').textContent = 'Edit drop';
+  $('#fWho').value   = d.who || lsGet(LS_WHO) || '';
+  $('#addTitle').textContent = 'Edit stop';
   $('#saveBtn').textContent  = '✓ Save changes';
   $('#editNote').className   = 'editnote on';
   $('#searchResults').innerHTML = ''; $('#fSearch').value = '';
@@ -1603,7 +1840,7 @@ function resetForm(){
   $('#fSearch').value = ''; $('#searchResults').innerHTML = '';
   $('#fQty').value = TYPES[curType].defQty;
   $('#fWhen').value = toLocalInput(new Date());
-  $('#addTitle').textContent = 'Log a drop';
+  $('#addTitle').textContent = 'Log a stop';
   $('#saveBtn').textContent  = '✓ Save to map';
   $('#editNote').className   = 'editnote';
 }
@@ -1625,14 +1862,14 @@ $('#entries').addEventListener('click', async e=>{
   }
   if(del){
     const d = drops.find(x=>x.id===del.dataset.del); if(!d) return;
-    if(!confirm(`Delete "${d.place || TYPES[d.type].label}"?\n\nThis removes it for the whole team.`)) return;
+    if(!confirm(`Delete "${d.place || TYPES[d.type].label}"?\n\nThis removes the stop for the whole team.`)) return;
     drops = drops.filter(x=>x.id!==d.id); saveLocal(); render();
     try{
       if(!API_URL) throw new Error('local only');
       await apiPost({action:'delete', id:d.id});
       toast('Deleted');
     }catch{
-      if(API_URL){ pending.push({action:'delete', id:d.id}); saveQueue(); toast('Deleted locally — syncs later','warn'); }
+      if(API_URL){ pending.push({action:'delete', id:d.id}); saveQueue(); toast('Deleted on this device. It will sync when you are back online.','warn'); }
       else toast('Deleted');
     }
   }
@@ -1645,17 +1882,17 @@ $('#filters').addEventListener('click', e=>{
 });
 
 $('#exportBtn').addEventListener('click', ()=>{
-  const rows = [['Date','Type','Quantity','Place','Notes','Logged by','Latitude','Longitude']];
+  const rows = [['Territory','Date','Type','Quantity','Place','Notes','Logged by','Latitude','Longitude']];
   [...drops].sort((a,b)=> new Date(a.ts)-new Date(b.ts)).forEach(d=>{
-    rows.push([new Date(d.ts).toLocaleString(), TYPES[d.type]?.label||d.type, d.qty||1,
+    rows.push([CITY.name, new Date(d.ts).toLocaleString(), TYPES[d.type]?.label||d.type, d.qty||1,
                d.place||'', d.notes||'', d.who||'', d.lat, d.lng]);
   });
   const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = 'soccer-shots-tallahassee-coverage.csv';
+  a.download = 'soccer-shots-' + CITY.id + '-coverage.csv';
   a.click();
-  toast('CSV downloaded');
+  toast('Spreadsheet downloaded.');
 });
 
 /* ---------------- layer toggles ---------------- */
@@ -1668,7 +1905,7 @@ $('#tCover').addEventListener('click', e=> toggleLayer(e.currentTarget, coverLay
 $('#tPins') .addEventListener('click', e=> toggleLayer(e.currentTarget, pinLayer));
 
 $('#tLocate').addEventListener('click', ()=>{
-  if(!navigator.geolocation) return toast('No GPS support here', 'err');
+  if(!navigator.geolocation) return toast('This browser does not support location services.', 'err');
   toast('Finding you…');
   navigator.geolocation.getCurrentPosition(p=>{
     const ll = [p.coords.latitude, p.coords.longitude];
@@ -1676,7 +1913,7 @@ $('#tLocate').addEventListener('click', ()=>{
     meMarker = L.circleMarker(ll, {radius:8, color:'#fff', weight:3, fillColor:'#2563eb', fillOpacity:1})
       .bindPopup('You are here').addTo(map);
     map.setView(ll, 15);
-  }, ()=> toast('Couldn\'t get your location', 'err'), {enableHighAccuracy:true, timeout:12000});
+  }, ()=> toast('Could not get your location.', 'err'), {enableHighAccuracy:true, timeout:12000});
 });
 
 $('#tSync').addEventListener('click', ()=> sync(false));
@@ -1684,7 +1921,7 @@ $('#tSync').addEventListener('click', ()=> sync(false));
 /* ---------------- sheet wiring ---------------- */
 $('#logBtn').addEventListener('click', ()=>{
   resetForm();                                  // also drops out of edit mode
-  $('#fWho').value = localStorage.getItem(LS_WHO) || '';
+  $('#fWho').value = lsGet(LS_WHO) || '';
   openSheet('#addSheet');
 });
 $('#listBtn').addEventListener('click', ()=> openSheet('#listSheet'));
@@ -1692,14 +1929,100 @@ $('#scrim').addEventListener('click', closeSheets);
 $$('[data-close]').forEach(b=> b.addEventListener('click', closeSheets));
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeSheets(); endTap(); } });
 
+/* ---------------- territory selection ---------------- */
+function buildCityOptions(){
+  $('#citySel').innerHTML = '<option value="">Select a territory…</option>'
+    + CITIES.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')
+    + '<option value="__other">My territory is not listed</option>';
+}
+
+function showCover(){
+  closeSheets();
+  endTap();
+  $('#cover').classList.remove('hidden');
+}
+
+function activateCity(city){
+  CITY     = city;
+  API_URL  = city.api || '';
+  LS_KEY   = 'ssmap_drops_' + city.id;
+  LS_QUEUE = 'ssmap_queue_' + city.id;
+
+  const town = city.name.split(',')[0];
+  document.title = 'Soccer Shots ' + town + ' — Outreach Coverage Map';
+  $('#cityTitle').textContent = 'Soccer Shots ' + town;
+  $('#searchBtn').textContent = '🔍 Search ' + town;
+
+  map.setMaxBounds(L.latLngBounds(city.bounds).pad(0.6));
+  map.setView(city.center, 12);
+
+  drops   = loadLocal();
+  pending = loadQueue();
+  render();
+  sync(true);
+
+  $('#cover').classList.add('hidden');
+  setTimeout(()=> map.invalidateSize(), 60);   // the map was hidden a moment ago
+
+  // Put the territory in the address bar so this view can be linked directly.
+  try{
+    const u = new URL(location.href);
+    u.searchParams.set('city', city.id);
+    history.replaceState(null, '', u);
+  }catch{}
+
+  // Show the key once, the first time somebody uses the map on this device.
+  if(!lsGet(LS_SEENKEY)){
+    lsSet(LS_SEENKEY, '1');
+    setTimeout(()=> openSheet('#keySheet'), 650);
+  }
+}
+
+$('#citySel').addEventListener('change', ()=>{
+  const v = $('#citySel').value;
+  const note = $('#cityNote'), go = $('#goBtn');
+  if(v === '__other'){
+    note.innerHTML = 'Territories are added as they come online. Email '
+      + `<a href="mailto:${CONTACT_EMAIL}">Dylan Williamson</a> and your city can be set up and added to this list.`;
+    go.textContent = 'Email Dylan Williamson';
+    go.disabled = false;
+  } else {
+    note.textContent = '';
+    go.textContent = 'View coverage map';
+    go.disabled = !v;
+  }
+});
+
+$('#goBtn').addEventListener('click', ()=>{
+  const v = $('#citySel').value;
+  if(v === '__other'){
+    location.href = 'mailto:' + CONTACT_EMAIL
+      + '?subject=' + encodeURIComponent('Soccer Shots Coverage Map — new territory request');
+    return;
+  }
+  const city = CITIES.find(c => c.id === v);
+  if(city) activateCity(city);
+});
+
+$('#changeCity').addEventListener('click', showCover);
+$('#tKey').addEventListener('click', ()=> openSheet('#keySheet'));
+
 /* ---------------- boot ---------------- */
-drops = loadLocal();
-pending = loadQueue();
 $('#fWhen').value = toLocalInput(new Date());
-render();
-sync(true);
-window.addEventListener('online', ()=> sync(true));
-setInterval(()=> sync(true), 60000);   // keep the team's view fresh
+buildCityOptions();
+
+let requested = '';
+try{ requested = new URLSearchParams(location.search).get('city') || ''; }catch{}
+const startCity = CITIES.find(c => c.id === requested && c.api);
+if(startCity){
+  $('#citySel').value = startCity.id;
+  activateCity(startCity);
+} else {
+  showCover();
+}
+
+window.addEventListener('online', ()=>{ if(CITY) sync(true); });
+setInterval(()=>{ if(CITY) sync(true); }, 60000);   // keep the team's view fresh
 </script>
 </body>
 </html>
